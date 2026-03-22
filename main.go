@@ -15,6 +15,15 @@ func Logger() gin.HandlerFunc {
 	}
 }
 
+func CORSHandler() gin.HandlerFunc {
+	// 假设校验了白名单
+	// if isOk, err = ...
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Next()
+	}
+}
+
 // 中间件（拦截器），功能：预处理，登录授权、验证、分页、耗时统计...
 // func myHandler() gin.HandlerFunc {
 // 	return func(ctx *gin.Context) {
@@ -30,10 +39,10 @@ func main() {
 	// 使用中间件
 
 	router.Use(Logger())
+	router.Use(CORSHandler())
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message":                     "pong",
-			"access-control-allow-origin": "*",
+			"message": "pong",
 		})
 	})
 	router.Run() // listens on 0.0.0.0:8080 by default
