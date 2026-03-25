@@ -54,6 +54,20 @@ type ListQuery struct {
 	Sort string `form:"sort"`
 }
 
+type BaseResp[T any] struct {
+	Code    int    `json:"code"`
+	Data    T      `json:"data"`
+	Message string `json:"message"`
+}
+
+type ListUserData struct {
+	List  []User `json:"list"`
+	Page  int    `json:"page"`
+	Size  int    `json:"size"`
+	Sort  string `json:"sort"`
+	Total int    `json:"total"`
+}
+
 func main() {
 	router := gin.Default()
 	// 使用中间件
@@ -123,17 +137,33 @@ func main() {
 			})
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"code":    0,
-			"message": "success",
-			"data": gin.H{
-				"list":  db_list,
-				"page":  query.Page,
-				"size":  query.Size,
-				"sort":  query.Sort,
-				"total": 100,
+		c.JSON(http.StatusOK,
+			// √ 定义内层结构体和外层泛型
+			BaseResp[ListUserData]{
+				Code:    0,
+				Message: "success",
+				Data: ListUserData{
+					List:  db_list,
+					Page:  query.Page,
+					Size:  query.Size,
+					Sort:  query.Sort,
+					Total: 100,
+				},
 			},
-		})
+
+			// × 零散拼接 没有约束和复用性
+			// 	gin.H{
+			// 	"code":    0,
+			// 	"message": "success",
+			// 	"data": gin.H{
+			// 		"list":  db_list,
+			// 		"page":  query.Page,
+			// 		"size":  query.Size,
+			// 		"sort":  query.Sort,
+			// 		"total": 100,
+			// 	},
+			// }
+		)
 	})
 
 	router.Run() // listens on 0.0.0.0:8080 by default
