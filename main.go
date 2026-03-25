@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -37,14 +38,20 @@ func CORSHandler() gin.HandlerFunc {
 
 type User struct {
 	// uri 结构体标签将 URI 路径参数直接绑定到结构体中
-	Name string `uri:"name" binding:"required"`
-	Id   int    `uri:"id" binding:"required"`
+	Name string `uri:"name" json:"name" binding:"required"`
+	Id   int    `uri:"id" json:"id" binding:"required"`
 
 	// `xx:"yy"` = 结构体标签（Struct Tag）。它是一种元数据（关于数据的数据），用来为结构体的字段提供额外的信息
 	// Name string `json:"name"`
 	// 当把 User 结构体转换成 JSON 字符串（序列化）时，字段 Name 在 JSON 中应该使用键名 "name"，而不是默认的字段名 "Name"。
 	// 类似的还有
 	// gorm:"column:user_name;type:varchar(100)" 用来指定数据库表中的列名和类型
+}
+
+type ListQuery struct {
+	Page int    `form:"page,default=1" binding:"min=1"`
+	Size int    `form:"size,default=5" binding:"min=1,max=100"`
+	Sort string `form:"sort"`
 }
 
 func main() {
@@ -60,7 +67,7 @@ func main() {
 		})
 	})
 
-	// 查询用户接口
+	// 查询用户接口 路径参数
 	router.GET("/user/info/:name/:id", func(c *gin.Context) {
 		var user User
 		// √ 使用 Gin 的绑定机制 将请求参数直接绑定到结构体，并**自动进行类型转换和校验**
@@ -88,5 +95,46 @@ func main() {
 
 		c.JSON(http.StatusOK, user)
 	})
+
+	// 查询表格接口 字符串参数
+	router.GET("/list", func(c *gin.Context) {
+		// page := c.DefaultQuery("page", "1")
+		// _page, err := strconv.Atoi(page)
+		// if err ...
+		// size := c.DefaultQuery("size", "5")
+		// sort := c.Query("sort")
+
+		var query ListQuery
+		if err := c.ShouldBindQuery(&query); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    1001,
+				"data":    nil,
+				"message": "参数不合法",
+			})
+			return
+		}
+
+		// 模拟从数据库search到对应数据
+		db_list := make([]User, 0, query.Size)
+		for i := 0; i < query.Size; i++ {
+			db_list = append(db_list, User{
+				Name: fmt.Sprintf("user-%d", i+1),
+				Id:   i + 1,
+			})
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    0,
+			"message": "success",
+			"data": gin.H{
+				"list":  db_list,
+				"page":  query.Page,
+				"size":  query.Size,
+				"sort":  query.Sort,
+				"total": 100,
+			},
+		})
+	})
+
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
