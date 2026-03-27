@@ -18,10 +18,19 @@ func Logger() gin.HandlerFunc {
 }
 
 func CORSHandler() gin.HandlerFunc {
-	// 假设校验了白名单
-	// if isOk, err = ...
 	return func(c *gin.Context) {
+		// 假设校验了白名单
+		// origin := c.GetHeader("Origin")
+		// if isOk, err = ...
 		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "*")
+		c.Header("Access-Control-Allow-Headers", "*")
+
+		// 对 OPTIONS /user/add，Gin 找不到和 OPTIONS 匹配的路由 → 常返回 404
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent) // 204
+			return
+		}
 		c.Next()
 	}
 }
@@ -48,6 +57,10 @@ type User struct {
 	// gorm:"column:user_name;type:varchar(100)" 用来指定数据库表中的列名和类型
 }
 
+// 每个结构体只服务于一个端点
+type UserCreate struct {
+	Name string `uri:"name" json:"name" binding:"required"`
+}
 type ListQuery struct {
 	Page int    `form:"page,default=1" binding:"min=1"`
 	Size int    `form:"size,default=5" binding:"min=1,max=100"`
@@ -164,6 +177,32 @@ func main() {
 			// 	},
 			// }
 		)
+	})
+
+	router.POST("/user/add", func(c *gin.Context) {
+		var user UserCreate
+		err := c.ShouldBindJSON(&user)
+		// name := c.DefaultPostForm("name", "nobody")
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, BaseResp[any]{
+				Code:    100,
+				Message: "创建失败",
+			})
+			return
+		}
+
+		// 数据库模拟添加一条数据
+		// newUser := db.CreateUser(&user)
+
+		c.JSON(http.StatusOK, BaseResp[User]{
+			Code:    0,
+			Message: "Success",
+			Data: User{
+				Name: user.Name,
+				Id:   123,
+			},
+		})
 	})
 
 	router.Run() // listens on 0.0.0.0:8080 by default
