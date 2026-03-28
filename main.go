@@ -36,14 +36,15 @@ func CORSHandler() gin.HandlerFunc {
 }
 
 // 中间件（拦截器），功能：预处理，登录授权、验证、分页、耗时统计...
-// func myHandler() gin.HandlerFunc {
-// 	return func(ctx *gin.Context) {
-// 		// 通过自定义中间件，设置的值，在后续处理只要调用了这个中间件的都可以拿到这里的参数
-// 		ctx.Set("usersesion", "userid-1")
-// 		ctx.Next()  // 放行
-// 		ctx.Abort() // 阻止
-// 	}
-// }
+func AuthRequired() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// 通过自定义中间件，设置的值，在后续处理只要调用了这个中间件的都可以拿到这里的参数
+		// ... check token, session, etc.
+		ctx.Set("usersesion", "userid-1")
+		ctx.Next() // 放行
+		// ctx.Abort() // 阻止
+	}
+}
 
 type User struct {
 	// uri 结构体标签将 URI 路径参数直接绑定到结构体中
@@ -204,6 +205,34 @@ func main() {
 			},
 		})
 	})
+
+	// **路由分组**
+	{
+		v1 := router.Group("/v1")
+		v1.POST("/login", func(ctx *gin.Context) {})
+		v1.POST("/submit", func(ctx *gin.Context) {})
+
+		v2 := router.Group("/v2")
+		v2.POST("/login", func(ctx *gin.Context) {})
+		v2.POST("/submit", func(ctx *gin.Context) {})
+	}
+
+	// **分组使用中间件**
+	// public routes -- 不需要权限校验
+	public := router.Group("/api")
+	{
+		public.GET("/health", func(ctx *gin.Context) {})
+		// **嵌套分组**
+		users := public.Group("/v1")
+		// /api/v1/users
+		users.GET("/users", func(ctx *gin.Context) {})
+	}
+	// private routes -- 需要权限校验
+	private := router.Group("/api")
+	private.Use(AuthRequired())
+	{
+		private.POST("/settings", func(ctx *gin.Context) {})
+	}
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
