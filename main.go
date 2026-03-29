@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -45,6 +46,32 @@ func AuthRequired() gin.HandlerFunc {
 		ctx.Set("usersesion", "userid-1")
 		ctx.Next() // 放行
 		// ctx.Abort() // 阻止
+	}
+}
+
+// 中间件 处理路由抛出的错误errors
+func ErrorHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.Next()
+
+		if len(ctx.Errors) == 0 {
+			return
+		}
+		// 拿出错误队列的最后一个错误
+		err := ctx.Errors.Last().Err
+		var appError *AppError
+		// 匹配error并赋值
+		if errors.As(err, &appError) {
+			ctx.JSON(appError.Status, gin.H{
+				"success": false,
+				"error":   gin.H{"code": appError.Code, "message": appError.Message},
+			})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"error":   gin.H{"code": "INTERNAL", "message": "an unexpected error occurred"},
+			})
+		}
 	}
 }
 
@@ -93,6 +120,23 @@ type ListUserData struct {
 	List []User `json:"list"`
 }
 
+// AppError 代表 api接口错误时返回信息的结构
+type AppError struct {
+	Status  int    `json:"-"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+var (
+	ErrNotFound     = &AppError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "resource not found"}
+	ErrUnauthorized = &AppError{Status: http.StatusUnauthorized, Code: "UNAUTHORIZED", Message: "authentication required"}
+	ErrBadRequest   = &AppError{Status: http.StatusBadRequest, Code: "BAD_REQUEST", Message: "invalid request"}
+)
+
+func (e *AppError) Error() string {
+	return e.Message
+}
+
 func Ok(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, BaseResp[any]{
 		Code: 100,
@@ -113,6 +157,7 @@ func main() {
 
 	router.Use(Logger())
 	router.Use(CORSHandler())
+	router.Use(ErrorHandler())
 	// 测试接口
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -287,6 +332,7 @@ func main() {
 		})
 	})
 
+	// 筛选参数demo
 	// GET /api/products?category=electronics&min_price=10&sort=price&order=asc
 	router.GET("/api/products", func(ctx *gin.Context) {
 		category := ctx.Query("category")
@@ -322,5 +368,17 @@ func main() {
 		})
 	})
 
+	// 测试自定义错误处理
+	router.GET("/api/items/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+
+		if id == "0" {
+			// 将错误信息添加到上下文context的错误列表中
+			ctx.Error(ErrNotFound)
+			return
+		}
+
+		Ok(ctx, gin.H{"success": true, "data": gin.H{"id": id}})
+	})
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
