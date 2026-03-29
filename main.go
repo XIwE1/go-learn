@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,7 @@ func Logger() gin.HandlerFunc {
 	}
 }
 
+// 中间件 - 处理跨域
 func CORSHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 假设校验了白名单
@@ -181,6 +183,12 @@ func main() {
 				Data: ListUserData{
 					List: db_list,
 				},
+				Meta: &Meta{
+					Page:  query.Page,
+					Size:  query.Size,
+					Sort:  query.Sort,
+					Total: 100,
+				},
 			},
 
 			// × 零散拼接 没有约束和复用性
@@ -259,6 +267,59 @@ func main() {
 			return
 		}
 		Ok(ctx, gin.H{"name": "xiwei", "id": id})
+	})
+
+	router.GET("/api/articles", func(ctx *gin.Context) {
+		cursor := ctx.DefaultQuery("cursor", "")
+		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "20"))
+
+		if limit > 100 {
+			limit = 100
+		}
+
+		// articles, nextCursor := db.ListArticles(cursor, limit)
+		_ = cursor
+
+		Ok(ctx, gin.H{
+			"code":        100,
+			"data":        []gin.H{}, // articles
+			"next_cursor": "",        // nextCursor (empty string means no more pages)
+		})
+	})
+
+	// GET /api/products?category=electronics&min_price=10&sort=price&order=asc
+	router.GET("/api/products", func(ctx *gin.Context) {
+		category := ctx.Query("category")
+		minPrice := ctx.DefaultQuery("min_price", "0")
+		maxPrice := ctx.DefaultQuery("max_price", "9999")
+		order := ctx.DefaultQuery("order", "asc")
+		sortBy := ctx.DefaultQuery("sort", "created_at")
+
+		// 校验排序字段 以防代码注入
+		allowed := map[string]bool{"created_at": true, "price": true, "name": false}
+		if !allowed[sortBy] {
+			sortBy = "created_at"
+		}
+		if order != "desc" && order != "asc" {
+			order = "desc"
+		}
+
+		// 通过传递来的字段执行一些查询操作
+		_ = category
+		_ = minPrice
+		_ = maxPrice
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    []gin.H{},
+			"filters": gin.H{
+				"category":  category,
+				"min_price": minPrice,
+				"max_price": maxPrice,
+				"sort":      sortBy,
+				"order":     order,
+			},
+		})
 	})
 
 	router.Run() // listens on 0.0.0.0:8080 by default
