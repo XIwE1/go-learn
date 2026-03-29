@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"myproject/routes"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -380,5 +382,9 @@ func main() {
 
 		Ok(ctx, gin.H{"success": true, "data": gin.H{"id": id}})
 	})
+
+	routes.RegisterUserRoutes(router)
+	routes.RegisterOrderRoutes(router)
+
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
