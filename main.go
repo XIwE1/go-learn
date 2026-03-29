@@ -69,17 +69,40 @@ type ListQuery struct {
 }
 
 type BaseResp[T any] struct {
-	Code    int    `json:"code"`
-	Data    T      `json:"data"`
+	Code int `json:"code"`
+	Data T   `json:"data"`
+	// Message string `json:"message"`
+	Error *ErrorInfo `json:"error,omitempty"`
+	Meta  *Meta      `json:"meta,omitempty"`
+}
+
+type ErrorInfo struct {
 	Message string `json:"message"`
 }
 
+type Meta struct {
+	Page  int    `json:"page,omitempty"`
+	Size  int    `json:"size,omitempty"`
+	Sort  string `json:"sort,omitempty"`
+	Total int    `json:"total,omitempty"`
+}
+
 type ListUserData struct {
-	List  []User `json:"list"`
-	Page  int    `json:"page"`
-	Size  int    `json:"size"`
-	Sort  string `json:"sort"`
-	Total int    `json:"total"`
+	List []User `json:"list"`
+}
+
+func Ok(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, BaseResp[any]{
+		Code: 100,
+		Data: data,
+	})
+}
+
+func Fail(c *gin.Context, status int, code int, message string) {
+	c.JSON(status, BaseResp[any]{
+		Code:  code,
+		Error: &ErrorInfo{Message: message},
+	})
 }
 
 func main() {
@@ -154,14 +177,9 @@ func main() {
 		c.JSON(http.StatusOK,
 			// √ 定义内层结构体和外层泛型
 			BaseResp[ListUserData]{
-				Code:    0,
-				Message: "success",
+				Code: 0,
 				Data: ListUserData{
-					List:  db_list,
-					Page:  query.Page,
-					Size:  query.Size,
-					Sort:  query.Sort,
-					Total: 100,
+					List: db_list,
 				},
 			},
 
@@ -187,8 +205,8 @@ func main() {
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, BaseResp[any]{
-				Code:    100,
-				Message: "创建失败",
+				Code:  100,
+				Error: &ErrorInfo{Message: "创建失败"},
 			})
 			return
 		}
@@ -197,8 +215,7 @@ func main() {
 		// newUser := db.CreateUser(&user)
 
 		c.JSON(http.StatusOK, BaseResp[User]{
-			Code:    0,
-			Message: "Success",
+			Code: 0,
 			Data: User{
 				Name: user.Name,
 				Id:   123,
@@ -233,6 +250,16 @@ func main() {
 	{
 		private.POST("/settings", func(ctx *gin.Context) {})
 	}
+
+	// 测试一致响应格式
+	router.GET("/api/user/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		if id == "0" {
+			Fail(ctx, http.StatusNotFound, 201, "invalid id")
+			return
+		}
+		Ok(ctx, gin.H{"name": "xiwei", "id": id})
+	})
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
