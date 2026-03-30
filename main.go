@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"myproject/routes"
 
@@ -409,6 +410,25 @@ func main() {
 
 	routes.RegisterUserRoutes(router)
 	routes.RegisterOrderRoutes(router)
+
+	// gin中的goroutine
+	router.GET("/long_async/:id", func(c *gin.Context) {
+		// Gin 为了性能会用 sync.Pool 复用 **gin.Contex**。
+		// 请求的 handler 返回后，这个 Context 可能被放回池里、很快又被另一个请求复用
+
+		// 使用copy创建一个快照 避免被Pool池影响
+		cCp := c.Copy()
+		go func() {
+			// simulate a long task with time.Sleep(). 5 seconds
+			time.Sleep(5 * time.Second)
+
+			// note that you are using the copied context "cCp", IMPORTANT
+			log.Println("Done! in path " + cCp.Request.URL.Path)
+
+			// 如果你的 goroutine 还握着旧的 c 在读写，**就可能读到/写到“另一个请求”的上下文**，导致竞态、数据错乱甚至 panic
+			// log.Println("Done! in path " + c.Request.URL.Path)
+		}()
+	})
 
 	router.Run() // listens on 0.0.0.0:8080 by default
 }
