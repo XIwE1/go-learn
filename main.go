@@ -77,6 +77,18 @@ func ErrorHandler() gin.HandlerFunc {
 	}
 }
 
+// 中间件 测试路由级中间件 校验id是否为有效的格式
+func ValidateIdHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		if len(id) > 5 {
+			Fail(ctx, ErrBadRequest.Status, 102, "不合法，id不能大于5位数")
+			ctx.Abort()
+		}
+		ctx.Next()
+	}
+}
+
 type User struct {
 	// uri 结构体标签将 URI 路径参数直接绑定到结构体中
 	Name string `uri:"name" json:"name" binding:"required"`
@@ -307,7 +319,7 @@ func main() {
 	}
 
 	// 测试一致响应格式
-	router.GET("/api/user/:id", func(ctx *gin.Context) {
+	router.GET("/api/user/:id", ValidateIdHandler(), func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		if id == "0" {
 			Fail(ctx, http.StatusNotFound, 201, "invalid id")
