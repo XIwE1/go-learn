@@ -18,6 +18,15 @@ func Logger() gin.HandlerFunc {
 		log.Printf("%s %s", c.Request.Method, c.Request.URL.Path)
 		// 继续下一步
 		c.Next()
+		// 中间件的执行流程 —— 以Next为分界线
+
+		// c.Next() 之前的代码在路由处理函数之前运行。用于设置任务，如**记录开始时间、验证令牌或使用 c.Set() 设置上下文值**
+
+		// c.Next() 主动调用链中的下一个处理函数（另一个中间件或最终的路由处理函数）。中间件的执行在此暂停，直到所有下游处理函数完成。
+
+		// c.Next() 之后的代码在路由处理函数返回后运行。用于清理、记录响应状态或测量延迟。
+
+		// 中间件的调用顺序，更广泛的中间件优先执行，全局 > 分组 > 路由
 	}
 }
 
@@ -53,6 +62,9 @@ func AuthRequired() gin.HandlerFunc {
 
 // 中间件 处理路由抛出的错误errors
 func ErrorHandler() gin.HandlerFunc {
+	// 在路由中会遇到多种错误——无效输入、数据库故障、未授权访问或内部 bug。在每个处理函数中单独处理错误会导致重复代码和不一致的响应
+	// 采用集中式的错误处理的中间件
+	// 在每个请求后运行并检查通过 c.Error(err) 添加到 Gin 上下文中的任何错误来解决这个问题
 	return func(ctx *gin.Context) {
 		ctx.Next()
 
