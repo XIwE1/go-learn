@@ -221,6 +221,37 @@ func main() {
 	// 	MaxAge:           12 * time.Hour,
 	//   }))
 
+	// 对于 需要共享的 数据库连接、配置和服务等依赖 ，GO推荐了三种模式（而不是DI）
+	// **首先 连接数据库**
+	// db, err := sql.Open("postgres", "postgres://user:pass@localhost/dbname?sslmode=disable")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer db.Close()
+	// 1. 闭包模式 - 适合中小型项目 少量依赖 - 依赖通过闭包捕获进 Handler
+	// func XXHandler(db *sql.DB) gin.HandlerFunc { return func(c *gin.Context) {}} ...
+	// r.GET("/ping", PingHandler(db))
+	// r.GET("/users/:id", GetUserHandler(db))
+
+	// 2. 结构体 + 方法模式 - 中大型应用 - 编译期类型安全
+	// type App struct { DB     *sql.DB, Logger *slog.Logger }
+	// app := &App{ DB:     db,}
+	// r.GET("/users/:id", app.GetUser)
+
+	// 3. 中间件注入 - AOP - 通过在上下文注入依赖
+	// func DatabaseMiddleware(db *sql.DB) gin.HandlerFunc {
+	// 	return func(c *gin.Context) {
+	// 	  c.Set("db", db)
+	// 	  c.Next()
+	// 	}
+	//   }
+	//   func GetUser(c *gin.Context) {
+	// 	db := c.MustGet("db").(*sql.DB)
+	// 	// Use db...
+	//   }
+	// r.Use(DatabaseMiddleware(db))
+	// r.GET("/users/:id", GetUser)
+
 	// 测试接口
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
