@@ -252,6 +252,20 @@ func main() {
 	// r.Use(DatabaseMiddleware(db))
 	// r.GET("/users/:id", GetUser)
 
+	// 会话管理 当你需要跨微服务的无状态认证时使用 JWT
+	// 创建一个存储session会话的地方
+	// store := cookie.NewStore([]byte("your-secret-key"))
+	// r.Use(sessions.Sessions("mysession", store))
+	// r.GET("/login", func(c *gin.Context) {
+	// 	session := sessions.Default(c)
+	// 	session.Set("user", "john")
+	// 	session.Save()
+	// 	user := session.Get("user")
+	// 	session.Clear()
+	// 	session.Save()
+	// 	c.JSON(http.StatusOK, gin.H{"message": "logged in"})
+	// })
+
 	// 测试接口
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
