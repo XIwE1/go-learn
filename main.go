@@ -10,6 +10,8 @@ import (
 
 	"myproject/routes"
 
+	// "github.com/gin-contrib/cors"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -208,6 +210,16 @@ func main() {
 		c.Header("Permissions-Policy", "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()")
 		c.Next()
 	})
+
+	// 配置跨域资源共享 CORS ，控制可以向你发送API请求的外部域
+	// router.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"https://example.com"},
+	// 	AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+	// 	AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	//   }))
 
 	// 测试接口
 	router.GET("/ping", func(c *gin.Context) {
