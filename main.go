@@ -185,6 +185,30 @@ func main() {
 	router.Use(Logger())
 	router.Use(CORSHandler())
 	router.Use(ErrorHandler())
+
+	expectedHost := "localhost:8080"
+
+	// 设置安全头
+	router.Use(func(c *gin.Context) {
+		if c.Request.Host != expectedHost {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid host header"})
+			return
+		}
+		// 通过禁止页面在 <iframe> 中加载来防止点击劫持
+		c.Header("X-Frame-Options", "DENY")
+		// 控制浏览器允许加载哪些资源（脚本、样式、图片、字体等）以及从哪些来源
+		c.Header("Content-Security-Policy", "default-src 'self'; connect-src *; font-src *; script-src-elem * 'unsafe-inline'; img-src * data:; style-src * 'unsafe-inline';")
+		c.Header("X-XSS-Protection", "1; mode=block")
+		// 强制浏览器在指定的 max-age 期间对所有未来请求使用 HTTPS
+		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		// 控制传出请求中发送多少引用者信息
+		c.Header("Referrer-Policy", "strict-origin")
+		// 防止 MIME 类型嗅探攻击，否则攻击者可能会将有害脚本伪装成无害文件
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("Permissions-Policy", "geolocation=(),midi=(),sync-xhr=(),microphone=(),camera=(),magnetometer=(),gyroscope=(),fullscreen=(self),payment=()")
+		c.Next()
+	})
+
 	// 测试接口
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
