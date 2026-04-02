@@ -228,6 +228,7 @@ func main() {
 	// 	panic(err)
 	// }
 	// defer db.Close()
+
 	// 1. 闭包模式 - 适合中小型项目 少量依赖 - 依赖通过闭包捕获进 Handler
 	// func XXHandler(db *sql.DB) gin.HandlerFunc { return func(c *gin.Context) {}} ...
 	// r.GET("/ping", PingHandler(db))
@@ -251,8 +252,15 @@ func main() {
 	//   }
 	// r.Use(DatabaseMiddleware(db))
 	// r.GET("/users/:id", GetUser)
+	// 优雅地处理连接错误
+	// if err := db.Ping(); err != nil {
+	// 	log.Fatal(err)
+	// }
+	// 不管使用 database/sql 还是 GORM
+	// 都要将请求上下文传递给查询。 使用 c.Request.Context()，以便在客户端断开连接或超时触发时取消长时间运行的查询
+	// 当请求需要执行多个必须一起成功或失败的写操作时，使用**数据库事务**
 
-	// 会话管理 当你需要跨微服务的无状态认证时使用 JWT
+	// **会话管理** 当你需要跨微服务的无状态认证时使用 JWT
 	// 创建一个存储session会话的地方
 	// store := cookie.NewStore([]byte("your-secret-key"))
 	// r.Use(sessions.Sessions("mysession", store))
