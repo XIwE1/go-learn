@@ -511,6 +511,23 @@ func main() {
 		}()
 	})
 
+	// 通过 http.Cookie 设置 cookie
+	router.GET("/getCookie", func(ctx *gin.Context) {
+		ctx.SetCookieData(&http.Cookie{
+			Name:     "session_id",
+			Value:    "abc123",
+			Path:     "/",
+			Domain:   "localhost",
+			Expires:  time.Now().Add(24 * time.Hour),
+			MaxAge:   86400,
+			Secure:   true,
+			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		})
+		ctx.String(http.StatusOK, "ok")
+	})
+
+	// 默认启动方式
 	// router.Run() // listens on 0.0.0.0:8080 by default
 
 	// 使用自定义服务器配置
