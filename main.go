@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"myproject/logs"
 	"myproject/routes"
 
 	// "github.com/gin-contrib/cors"
@@ -181,14 +182,20 @@ func Fail(c *gin.Context, status int, code int, message string) {
 }
 
 func main() {
+	// 日志写入
+	logs.RegisterLog()
+
 	router := gin.Default()
 	// 使用中间件
-
 	router.Use(Logger())
 	router.Use(CORSHandler())
 	router.Use(ErrorHandler())
 
 	expectedHost := "localhost:8080"
+
+	// 业务文件 - 注册路由
+	routes.RegisterUserRoutes(router)
+	routes.RegisterOrderRoutes(router)
 
 	// 设置安全头
 	router.Use(func(c *gin.Context) {
@@ -496,9 +503,6 @@ func main() {
 
 		Ok(ctx, gin.H{"success": true, "data": gin.H{"id": id}})
 	})
-
-	routes.RegisterUserRoutes(router)
-	routes.RegisterOrderRoutes(router)
 
 	// gin中的goroutine
 	router.GET("/long_async/:id", func(c *gin.Context) {
