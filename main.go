@@ -186,6 +186,10 @@ func main() {
 	logs.RegisterLog()
 
 	router := gin.Default()
+
+	// 自定义日志格式
+	logs.FormatLogs(router)
+
 	// 使用中间件
 	router.Use(Logger())
 	router.Use(CORSHandler())
