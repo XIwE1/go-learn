@@ -196,6 +196,7 @@ func main() {
 	router.Use(Logger())
 	router.Use(CORSHandler())
 	router.Use(ErrorHandler())
+	router.Use(logs.RequestIdMiddleWare())
 
 	expectedHost := "localhost:8080"
 

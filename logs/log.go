@@ -8,9 +8,23 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 var SkipPaths = []string{"/ping"}
+
+// 中间件 - 生成 requestId 以便追踪请求
+func RequestIdMiddleWare() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		requestId := ctx.GetHeader("X-Request-ID")
+		if requestId == "" {
+			requestId = uuid.New().String()
+		}
+		ctx.Set("request-id", requestId)
+		ctx.Header("X-Request-ID", requestId)
+		ctx.Next()
+	}
+}
 
 // 自定义 log 的格式
 func FormatLogs(router *gin.Engine) {
