@@ -189,6 +189,8 @@ func main() {
 
 	// 自定义日志格式
 	logs.FormatLogs(router)
+	// 忽略指定路由与错误码
+	logs.IgnoreLogConfig(router)
 
 	// 使用中间件
 	router.Use(Logger())
