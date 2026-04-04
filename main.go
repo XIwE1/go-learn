@@ -17,6 +17,8 @@ import (
 	// "github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // 中间层打印日志
@@ -185,6 +187,16 @@ func Fail(c *gin.Context, status int, code int, message string) {
 }
 
 func main() {
+	// 连接数据库
+	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
+	dsn := "developer_1:txyprtwy12AA!@tcp(115.190.227.247:3306)/gin_mysql?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("数据库连接失败: ", err)
+	}
+	fmt.Println("db = ", db)
+	fmt.Println("err = ", err)
+
 	// 日志写入
 	f := logs.RegisterLog()
 	// 使用slog结构化日志
