@@ -3,8 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -183,9 +186,16 @@ func Fail(c *gin.Context, status int, code int, message string) {
 
 func main() {
 	// 日志写入
-	logs.RegisterLog()
+	f := logs.RegisterLog()
+	// 使用slog结构化日志
+	// logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)) × 无法写入到文件
+	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(f, os.Stdout), nil))
 
-	router := gin.Default()
+	// 默认 logger 与 recovery
+	// router := gin.Default()
+	// 自定义创建
+	router := gin.New()
+	router.Use(gin.Recovery())
 
 	// 自定义日志格式
 	logs.FormatLogs(router)
@@ -197,6 +207,7 @@ func main() {
 	router.Use(CORSHandler())
 	router.Use(ErrorHandler())
 	router.Use(logs.RequestIdMiddleWare())
+	router.Use(logs.SlogMiddleWare(logger))
 
 	expectedHost := "localhost:8080"
 

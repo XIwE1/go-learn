@@ -3,6 +3,7 @@ package logs
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -20,9 +21,35 @@ func RequestIdMiddleWare() gin.HandlerFunc {
 		if requestId == "" {
 			requestId = uuid.New().String()
 		}
-		ctx.Set("request-id", requestId)
+		ctx.Set("request_id", requestId)
 		ctx.Header("X-Request-ID", requestId)
 		ctx.Next()
+	}
+}
+
+// 中间件 - 结构化日志记录
+func SlogMiddleWare(logger *slog.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+
+		c.Next()
+
+		requestID, _ := c.Get("request_id")
+
+		logger.Info("request",
+			slog.String("request_id", requestID.(string)),
+			slog.String("method", c.Request.Method),
+			slog.String("path", c.Request.URL.Path),
+			slog.Int("status", c.Writer.Status()),
+			slog.Duration("latency", time.Since(start)),
+			slog.String("client_ip", c.ClientIP()),
+		)
+
+		if len(c.Errors) > 0 {
+			for _, err := range c.Errors {
+				logger.Error("request error", slog.String("error", err.Error()))
+			}
+		}
 	}
 }
 
@@ -57,7 +84,7 @@ func IgnoreLogConfig(router *gin.Engine) {
 	router.Use(gin.LoggerWithConfig(loggerConfig))
 }
 
-func RegisterLog() {
+func RegisterLog() *os.File {
 	f, _ := os.Create("gin.log")
 	// 会覆盖终端打印
 	// gin.DefaultWriter = io.MultiWriter(f)
@@ -65,4 +92,6 @@ func RegisterLog() {
 	// 如果想打印日志的同时记录日志 使用这个
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 
+	// 返回 os.File 让其他插件也能写入同一个文件
+	return f
 }
