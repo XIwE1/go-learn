@@ -2,8 +2,6 @@ package main
 
 import (
 	"myproject/routes"
-	"myproject/user/handler"
-	"myproject/user/service"
 	"net/http"
 	"time"
 
@@ -35,10 +33,8 @@ func main() {
 	router := gin.Default()
 	router.Use(CORSHandler())
 
-	// 注册User相关的路由
-	userService := service.NewUserService()
-	userHandler := handler.NewUserHandler(userService)
-	routes.RegisterUserRoutes(router, userHandler)
+	// 注册路由
+	routes.Register(router)
 
 	// 通过 http.Cookie 设置 cookie
 	router.GET("/getCookie", func(ctx *gin.Context) {

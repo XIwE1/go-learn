@@ -12,11 +12,11 @@ type UserService interface {
 	GetUserInfo(name string, id int) (dto.UserInfoResp, error)
 }
 
-type userService struct{}
-
 func NewUserService() UserService {
 	return &userService{}
 }
+
+type userService struct{}
 
 func (us *userService) GetUserInfo(name string, id int) (dto.UserInfoResp, error) {
 	if name == "" || id <= 0 {
