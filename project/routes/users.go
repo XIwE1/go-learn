@@ -21,7 +21,7 @@ func UserAuthorizedHandler() gin.HandlerFunc {
 }
 
 // 注册user相关的路由 在main里调用
-func RegisterUserRoutes(router *gin.Engine) {
+func RegisterUsersRoutes(router *gin.Engine) {
 	users := router.Group("/api/users")
 
 	// 分组中间件
