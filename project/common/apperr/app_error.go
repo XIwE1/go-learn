@@ -13,6 +13,7 @@ var (
 	ErrNotFound     = &AppError{Status: http.StatusNotFound, Code: 404, Message: "resource not found"}
 	ErrUnauthorized = &AppError{Status: http.StatusUnauthorized, Code: 401, Message: "authentication required"}
 	ErrBadRequest   = &AppError{Status: http.StatusBadRequest, Code: 400, Message: "invalid request"}
+	ErrInternal     = &AppError{Status: http.StatusInternalServerError, Code: 500, Message: "internal error"}
 )
 
 func (e *AppError) Error() string {

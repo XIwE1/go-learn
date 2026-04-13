@@ -6,7 +6,6 @@ import (
 	"myproject/common/httpx"
 	"myproject/user/dto"
 	"myproject/user/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,9 +31,20 @@ func (handler *UserHandler) GetUserInfo(ctx *gin.Context) {
 			httpx.FailApp(ctx, apperr.ErrBadRequest)
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "服务器内部错误"})
+		httpx.FailApp(ctx, apperr.ErrInternal)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, resp)
+	httpx.Ok(ctx, resp)
+}
+
+func (handler *UserHandler) GetUserList(ctx *gin.Context) {
+	var query dto.UserListQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		httpx.FailApp(ctx, apperr.ErrBadRequest)
+		return
+	}
+
+	resp, _ := handler.service.GetUserList(query)
+	httpx.Ok(ctx, resp)
 }

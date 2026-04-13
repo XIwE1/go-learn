@@ -10,4 +10,5 @@ func RegisterUserRoutes(router *gin.Engine, handler *handler.UserHandler) {
 	users := router.Group("/user")
 
 	users.GET("/info/:name/:id", handler.GetUserInfo)
+	users.GET("/list", handler.GetUserList)
 }

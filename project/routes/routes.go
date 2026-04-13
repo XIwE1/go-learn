@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"myproject/order/service"
 	"myproject/user/handler"
+	"myproject/user/service"
 
 	"github.com/gin-gonic/gin"
 )
