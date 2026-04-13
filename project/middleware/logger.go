@@ -2,14 +2,25 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-var SkipPaths = []string{"/ping"}
+var IgnorePaths = []string{"/ping"}
+
+// 中间件 控制台打印日志
+func LoggerMiddleWare() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		log.Printf("%s %s", ctx.Request.Method, ctx.Request.URL.Path)
+		// 继续下一步
+		ctx.Next()
+	}
+}
 
 // 中间件 - 结构化日志记录
 func SlogMiddleWare(logger *slog.Logger) gin.HandlerFunc {
@@ -17,6 +28,10 @@ func SlogMiddleWare(logger *slog.Logger) gin.HandlerFunc {
 		start := time.Now()
 
 		ctx.Next()
+
+		// if shouldSkip(ctx) {
+		// 	return
+		// }
 
 		requestID, _ := ctx.Get("request_id")
 
@@ -39,31 +54,33 @@ func SlogMiddleWare(logger *slog.Logger) gin.HandlerFunc {
 
 // 中间件 自定义 log 的格式
 func FormatLogMiddleware() gin.HandlerFunc {
-	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		// your custom format
-		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
-			param.ClientIP,
-			param.TimeStamp.Format(time.RFC1123),
-			param.Method,
-			param.Path,
-			param.Request.Proto,
-			param.StatusCode,
-			param.Latency,
-			param.Request.UserAgent(),
-			param.ErrorMessage,
-		)
+	return gin.LoggerWithConfig(gin.LoggerConfig{
+		Formatter: func(param gin.LogFormatterParams) string {
+			// your custom format
+			return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+				param.ClientIP,
+				param.TimeStamp.Format(time.RFC1123),
+				param.Method,
+				param.Path,
+				param.Request.Proto,
+				param.StatusCode,
+				param.Latency,
+				param.Request.UserAgent(),
+				param.ErrorMessage,
+			)
+		},
+		// SkipPaths: IgnorePaths,
+		// Skip: shouldSkip,
 	})
 }
 
-// 中间件 忽略指定路由的记录
-func IgnoreLogMiddleware() gin.HandlerFunc {
-	// 直接设置 跳过指定路由的日志记录
-	loggerConfig := gin.LoggerConfig{SkipPaths: SkipPaths}
+// 判断是否跳过的函数
+func shouldSkip(context *gin.Context) bool {
+	param := context.Request.URL.Path
 
-	// 设置函数 判断要跳过的记录
-	loggerConfig.Skip = func(c *gin.Context) bool {
-		// as an example skip non server side errors
-		return c.Writer.Status() < http.StatusInternalServerError
+	if slices.Contains(IgnorePaths, param) {
+		return true
 	}
-	return gin.LoggerWithConfig(loggerConfig)
+
+	return context.Writer.Status() < http.StatusInternalServerError
 }

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,15 +17,6 @@ import (
 // c.Next() 之后的代码在handler返回后运行。用于清理、记录响应状态或测量延迟。
 
 // 中间件的调用顺序，更广泛的中间件优先执行，全局 > 分组 > 路由
-
-// 中间件 打印日志
-func LoggerMiddleWare() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		log.Printf("%s %s", ctx.Request.Method, ctx.Request.URL.Path)
-		// 继续下一步
-		ctx.Next()
-	}
-}
 
 // 中间件 - 处理跨域
 func CORSMiddleWare() gin.HandlerFunc {
@@ -67,4 +58,23 @@ func RequestIdMiddleWare() gin.HandlerFunc {
 		ctx.Header("X-Request-ID", requestId)
 		ctx.Next()
 	}
+}
+
+func RegisterGlobal(router *gin.Engine, logger *slog.Logger) {
+	router.Use(
+		// core
+		CORSMiddleWare(),
+		RequestIdMiddleWare(),
+		// security
+		AuthRequiredMiddleWare(),
+		HeaderMiddleWare(),
+		ValidateIdMiddleWare(),
+		// error
+		ErrorMiddleWare(),
+		// log
+		FormatLogMiddleware(),
+		LoggerMiddleWare(),
+		SlogMiddleWare(logger),
+	)
+
 }

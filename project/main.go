@@ -1,8 +1,13 @@
 package main
 
 import (
+	"io"
+	"log/slog"
+	"myproject/common/log"
+	"myproject/middleware"
 	"myproject/routes"
 	"net/http"
+	"os"
 	"time"
 
 	// "github.com/gin-contrib/cors"
@@ -10,32 +15,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 中间件 - 处理跨域
-func CORSHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// 假设校验了白名单
-		// origin := c.GetHeader("Origin")
-		// if isOk, err = ...
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "*")
-		c.Header("Access-Control-Allow-Headers", "*")
-
-		// 对 OPTIONS /user/add，Gin 找不到和 OPTIONS 匹配的路由 → 常返回 404
-		if c.Request.Method == http.MethodOptions {
-			c.AbortWithStatus(http.StatusNoContent) // 204
-			return
-		}
-		c.Next()
-	}
-}
-
 func main() {
-	router := gin.Default()
-	router.Use(CORSHandler())
+	router := gin.New()
 
+	// 绑定中间件
+	router.Use(gin.Recovery())
+	logFile := log.InitLogWriter()
+	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), nil))
+	middleware.RegisterGlobal(router, logger)
 	// 注册路由
 	routes.Register(router)
 
+	// 测试接口
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 	// 通过 http.Cookie 设置 cookie
 	router.GET("/getCookie", func(ctx *gin.Context) {
 		ctx.SetCookieData(&http.Cookie{
