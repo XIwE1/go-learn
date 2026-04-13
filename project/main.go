@@ -23,6 +23,7 @@ func main() {
 	logFile := log.InitLogWriter()
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), nil))
 	middleware.RegisterGlobal(router, logger)
+
 	// 注册路由
 	routes.Register(router)
 
