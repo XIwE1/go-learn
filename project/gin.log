@@ -1,8 +1,11 @@
 [GIN-debug] GET    /user/info/:name/:id      --> myproject/user/handler.(*UserHandler).GetUserInfo-fm (11 handlers)
 [GIN-debug] GET    /user/list                --> myproject/user/handler.(*UserHandler).GetUserList-fm (11 handlers)
+[GIN-debug] POST   /user/add                 --> myproject/user/handler.(*UserHandler).CreateUser-fm (11 handlers)
 [GIN-debug] GET    /ping                     --> main.main.func1 (11 handlers)
 [GIN-debug] GET    /getCookie                --> main.main.func2 (11 handlers)
-{"time":"2026-04-14T07:10:27.1495163+08:00","level":"INFO","msg":"request","request_id":"fd044e30-8f46-406c-8a31-29175d6eb903","method":"GET","path":"/user/list","status":200,"latency":0,"client_ip":"::1"}
-::1 - [Tue, 14 Apr 2026 07:10:27 CST] "GET /user/list HTTP/1.1 200 15.592ms "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
-{"time":"2026-04-14T07:10:54.5969056+08:00","level":"INFO","msg":"request","request_id":"2ab91e61-282b-4ffe-a61c-a814b9fae30c","method":"GET","path":"/user/list","status":200,"latency":0,"client_ip":"::1"}
-::1 - [Tue, 14 Apr 2026 07:10:54 CST] "GET /user/list?page=2&size=3 HTTP/1.1 200 0s "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
+{"time":"2026-04-15T05:01:02.0152938+08:00","level":"INFO","msg":"request","request_id":"279da737-d69f-4981-a3e3-f200d4862315","method":"POST","path":"/user/add","status":400,"latency":514500,"client_ip":"::1"}
+::1 - [Wed, 15 Apr 2026 05:01:02 CST] "POST /user/add HTTP/1.1 400 13.5821ms "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
+{"time":"2026-04-15T05:02:38.4588599+08:00","level":"INFO","msg":"request","request_id":"ae1a2180-0eff-42f0-8a0c-aa0058e204d7","method":"GET","path":"/user/add","status":404,"latency":0,"client_ip":"::1"}
+::1 - [Wed, 15 Apr 2026 05:02:38 CST] "GET /user/add HTTP/1.1 404 501.7µs "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
+{"time":"2026-04-15T05:02:46.9135605+08:00","level":"INFO","msg":"request","request_id":"9909c95b-3878-4186-8420-85ddb9e802f8","method":"POST","path":"/user/add","status":200,"latency":0,"client_ip":"::1"}
+::1 - [Wed, 15 Apr 2026 05:02:46 CST] "POST /user/add HTTP/1.1 200 0s "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "

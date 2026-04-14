@@ -48,3 +48,14 @@ func (handler *UserHandler) GetUserList(ctx *gin.Context) {
 	resp, _ := handler.service.GetUserList(query)
 	httpx.Ok(ctx, resp)
 }
+
+func (handler *UserHandler) CreateUser(ctx *gin.Context) {
+	var user dto.UserCreate
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		httpx.FailApp(ctx, apperr.ErrBadRequest)
+		return
+	}
+
+	resp, _ := handler.service.CreateUser(user)
+	httpx.Ok(ctx, resp)
+}

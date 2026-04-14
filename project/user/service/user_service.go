@@ -6,6 +6,8 @@ import (
 	"myproject/common/response"
 	"myproject/user/dto"
 	"myproject/user/model"
+
+	"github.com/google/uuid"
 )
 
 var ErrInvalidUser = errors.New("invalid data")
@@ -14,6 +16,7 @@ var ErrInvalidUser = errors.New("invalid data")
 type UserService interface {
 	GetUserInfo(name string, id int) (dto.UserInfoResp, error)
 	GetUserList(query dto.UserListQuery) (dto.UserListResp, error)
+	CreateUser(params dto.UserCreate) (model.User, error)
 }
 
 func NewUserService() UserService {
@@ -53,4 +56,16 @@ func (us *userService) GetUserList(query dto.UserListQuery) (dto.UserListResp, e
 			Total: 100,
 		},
 	}, nil
+}
+
+func (us *userService) CreateUser(params dto.UserCreate) (model.User, error) {
+	// 数据库模拟添加一条数据
+	// newUser := db.CreateUser(&user)
+
+	newUser := model.User{
+		Name: params.Name,
+		Id:   uuid.New().ClockSequence(),
+	}
+
+	return newUser, nil
 }
