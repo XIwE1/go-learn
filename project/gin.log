@@ -1,11 +1,16 @@
 [GIN-debug] GET    /user/info/:name/:id      --> myproject/user/handler.(*UserHandler).GetUserInfo-fm (11 handlers)
 [GIN-debug] GET    /user/list                --> myproject/user/handler.(*UserHandler).GetUserList-fm (11 handlers)
 [GIN-debug] POST   /user/add                 --> myproject/user/handler.(*UserHandler).CreateUser-fm (11 handlers)
+[GIN-debug] GET    /test/long_async/:id      --> myproject/routes.RegisterTest.func1 (11 handlers)
+[GIN-debug] GET    /test/getCookie           --> myproject/routes.RegisterTest.func2 (11 handlers)
+[GIN-debug] GET    /test/error/:id           --> myproject/routes.RegisterTest.func3 (11 handlers)
+[GIN-debug] GET    /test/products            --> myproject/routes.RegisterTest.func4 (11 handlers)
 [GIN-debug] GET    /ping                     --> main.main.func1 (11 handlers)
-[GIN-debug] GET    /getCookie                --> main.main.func2 (11 handlers)
-{"time":"2026-04-15T05:01:02.0152938+08:00","level":"INFO","msg":"request","request_id":"279da737-d69f-4981-a3e3-f200d4862315","method":"POST","path":"/user/add","status":400,"latency":514500,"client_ip":"::1"}
-::1 - [Wed, 15 Apr 2026 05:01:02 CST] "POST /user/add HTTP/1.1 400 13.5821ms "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
-{"time":"2026-04-15T05:02:38.4588599+08:00","level":"INFO","msg":"request","request_id":"ae1a2180-0eff-42f0-8a0c-aa0058e204d7","method":"GET","path":"/user/add","status":404,"latency":0,"client_ip":"::1"}
-::1 - [Wed, 15 Apr 2026 05:02:38 CST] "GET /user/add HTTP/1.1 404 501.7µs "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
-{"time":"2026-04-15T05:02:46.9135605+08:00","level":"INFO","msg":"request","request_id":"9909c95b-3878-4186-8420-85ddb9e802f8","method":"POST","path":"/user/add","status":200,"latency":0,"client_ip":"::1"}
-::1 - [Wed, 15 Apr 2026 05:02:46 CST] "POST /user/add HTTP/1.1 200 0s "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
+{"time":"2026-04-15T05:36:01.7268394+08:00","level":"INFO","msg":"request","request_id":"9ea147a4-6ea4-4020-80bd-04cdf8c73a45","method":"GET","path":"/test/error/0","status":200,"latency":0,"client_ip":"::1"}
+{"time":"2026-04-15T05:36:01.7268394+08:00","level":"ERROR","msg":"request error","error":"resource not found"}
+::1 - [Wed, 15 Apr 2026 05:36:01 CST] "GET /test/error/0 HTTP/1.1 200 15.1269ms "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" Error #01: resource not found
+"
+{"time":"2026-04-15T05:36:53.1753709+08:00","level":"INFO","msg":"request","request_id":"acca67c8-9631-443d-b4ba-f216644bc167","method":"GET","path":"/test/products","status":200,"latency":0,"client_ip":"::1"}
+::1 - [Wed, 15 Apr 2026 05:36:53 CST] "GET /test/products?category=electronics&min_price=10&sort=price&order=asc HTTP/1.1 200 0s "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "
+{"time":"2026-04-15T05:37:42.200891+08:00","level":"INFO","msg":"request","request_id":"1139242e-3d70-4828-9201-b1343b864e1f","method":"GET","path":"/test/error/10","status":200,"latency":0,"client_ip":"::1"}
+::1 - [Wed, 15 Apr 2026 05:37:42 CST] "GET /test/error/10 HTTP/1.1 200 502.9µs "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" "

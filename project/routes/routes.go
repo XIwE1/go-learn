@@ -11,5 +11,5 @@ func Register(router *gin.Engine) {
 	userService := service.NewUserService()
 	userHandler := handler.NewUserHandler(userService)
 	RegisterUserRoutes(router, userHandler)
-
+	RegisterTest(router)
 }
