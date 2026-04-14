@@ -59,3 +59,25 @@ func (handler *UserHandler) CreateUser(ctx *gin.Context) {
 	resp, _ := handler.service.CreateUser(user)
 	httpx.Ok(ctx, resp)
 }
+
+func (handler *UserHandler) DeleteUser(ctx *gin.Context) {
+	var info dto.UserDelete
+	if err := ctx.ShouldBindJSON(&info); err != nil {
+		httpx.FailApp(ctx, apperr.ErrBadRequest)
+		return
+	}
+
+	resp, _ := handler.service.DeleteUser(info)
+	httpx.Ok(ctx, resp)
+}
+
+func (handler *UserHandler) UpdateUser(ctx *gin.Context) {
+	var data dto.UserUpdate
+	if err := ctx.ShouldBindJSON(&data); err != nil {
+		httpx.FailApp(ctx, apperr.ErrBadRequest)
+		return
+	}
+
+	resp, _ := handler.service.UpdateUser(data)
+	httpx.Ok(ctx, resp)
+}
