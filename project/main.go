@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"log/slog"
-	"myproject/common/log"
+	commonLog "myproject/common/log"
 	"myproject/middleware"
 	"myproject/routes"
+	"myproject/user/model"
 	"net/http"
 	"os"
 	"time"
@@ -13,19 +16,42 @@ import (
 	// "github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func main() {
+	// 连接数据库
+	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
+	dsn := "developer_1:txyprtwy12AA!@tcp(115.190.227.247:3306)/gin_mysql?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("数据库连接失败: ", err)
+	}
+	fmt.Println("db = ", db)
+	fmt.Println("err = ", err)
+	// 创建对应的表
+	db.AutoMigrate(&model.User{})
+
+	// 连接池
+	sqlDB, err := db.DB()
+	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
+	sqlDB.SetMaxIdleConns(10)
+	// SetMaxOpenConns 设置打开数据库连接的最大数量。
+	sqlDB.SetMaxOpenConns(100)
+	// SetConnMaxLifetime 设置了连接可复用的最大时间。
+	sqlDB.SetConnMaxLifetime(10 * time.Second) // 10秒钟
+
 	router := gin.New()
 
 	// 绑定中间件
 	router.Use(gin.Recovery())
-	logFile := log.InitLogWriter()
+	logFile := commonLog.InitLogWriter()
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), nil))
 	middleware.RegisterGlobal(router, logger)
 
 	// 注册路由
-	routes.Register(router)
+	routes.Register(router, db)
 
 	// 测试接口
 	router.GET("/ping", func(c *gin.Context) {

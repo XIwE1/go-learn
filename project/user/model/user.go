@@ -1,6 +1,9 @@
 package model
 
+import "gorm.io/gorm"
+
 type User struct {
+	gorm.Model
 	// uri 结构体标签将 URI 路径参数直接绑定到结构体中
 	Name string `uri:"name" json:"name" binding:"required"`
 	Id   int    `uri:"id" json:"id" binding:"required"`

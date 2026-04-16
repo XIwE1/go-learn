@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"myproject/common/response"
 	"myproject/user/dto"
 	"myproject/user/model"
+	"myproject/user/repository"
 
 	"github.com/google/uuid"
 )
@@ -16,16 +18,18 @@ var ErrInvalidUser = errors.New("invalid data")
 type UserService interface {
 	GetUserInfo(name string, id int) (dto.UserInfoResp, error)
 	GetUserList(query dto.UserListQuery) (dto.UserListResp, error)
-	CreateUser(params dto.UserCreate) (model.User, error)
+	CreateUser(ctx context.Context, params dto.UserCreate) (model.User, error)
 	DeleteUser(info dto.UserDelete) (model.User, error)
 	UpdateUser(data dto.UserUpdate) (model.User, error)
 }
 
-func NewUserService() UserService {
-	return &userService{}
+func NewUserService(userRepo repository.UserRepository) UserService {
+	return &userService{userRepo: userRepo}
 }
 
-type userService struct{}
+type userService struct {
+	userRepo repository.UserRepository
+}
 
 func (us *userService) GetUserInfo(name string, id int) (dto.UserInfoResp, error) {
 	if name == "" || id <= 0 {
@@ -60,16 +64,24 @@ func (us *userService) GetUserList(query dto.UserListQuery) (dto.UserListResp, e
 	}, nil
 }
 
-func (us *userService) CreateUser(params dto.UserCreate) (model.User, error) {
+func (us *userService) CreateUser(ctx context.Context, params dto.UserCreate) (model.User, error) {
 	// 数据库模拟添加一条数据
 	// newUser := db.CreateUser(&user)
 
-	newUser := model.User{
+	// newUser := model.User{
+	// 	Name: params.Name,
+	// 	Id:   uuid.New().ClockSequence(),
+	// }
+
+	newUser := &model.User{
 		Name: params.Name,
-		Id:   uuid.New().ClockSequence(),
 	}
 
-	return newUser, nil
+	if err := us.userRepo.Create(ctx, newUser); err != nil {
+		return model.User{}, err
+	}
+
+	return *newUser, nil
 }
 
 func (us *userService) DeleteUser(info dto.UserDelete) (model.User, error) {

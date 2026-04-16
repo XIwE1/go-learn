@@ -56,7 +56,16 @@ func (handler *UserHandler) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, _ := handler.service.CreateUser(user)
+	// ctx.Request.Context() 把当前请求的context传给下文
+	resp, err := handler.service.CreateUser(ctx.Request.Context(), user)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidUser) {
+			httpx.FailApp(ctx, apperr.ErrBadRequest)
+			return
+		}
+		httpx.FailApp(ctx, apperr.ErrInternal)
+		return
+	}
 	httpx.Ok(ctx, resp)
 }
 
