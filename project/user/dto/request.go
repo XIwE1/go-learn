@@ -19,7 +19,7 @@ type UserCreate struct {
 }
 
 type UserDelete struct {
-	Id int `uri:"id" json:"id" binding:"required"`
+	Id uint `uri:"id" json:"id" binding:"required"`
 }
 
 type UserUpdate struct {

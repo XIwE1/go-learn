@@ -3,13 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"myproject/common/response"
 	"myproject/user/dto"
 	"myproject/user/model"
 	"myproject/user/repository"
-
-	"github.com/google/uuid"
 )
 
 var ErrInvalidUser = errors.New("invalid data")
@@ -17,9 +14,9 @@ var ErrInvalidUser = errors.New("invalid data")
 // 定义userService有哪些方法
 type UserService interface {
 	GetUserInfo(name string, id int) (dto.UserInfoResp, error)
-	GetUserList(query dto.UserListQuery) (dto.UserListResp, error)
+	GetUserList(ctx context.Context, query dto.UserListQuery) (dto.UserListResp, error)
 	CreateUser(ctx context.Context, params dto.UserCreate) (model.User, error)
-	DeleteUser(info dto.UserDelete) (model.User, error)
+	DeleteUser(ctx context.Context, info dto.UserDelete) (model.User, error)
 	UpdateUser(data dto.UserUpdate) (model.User, error)
 }
 
@@ -43,15 +40,16 @@ func (us *userService) GetUserInfo(name string, id int) (dto.UserInfoResp, error
 	}, nil
 }
 
-func (us *userService) GetUserList(query dto.UserListQuery) (dto.UserListResp, error) {
+func (us *userService) GetUserList(ctx context.Context, query dto.UserListQuery) (dto.UserListResp, error) {
 	// 模拟从数据库search到对应数据
-	db_list := make([]model.User, 0, query.Size)
-	for i := 0; i < query.Size; i++ {
-		db_list = append(db_list, model.User{
-			Name: fmt.Sprintf("user-%d", i+1),
-			Id:   i + 1,
-		})
-	}
+	// db_list := make([]model.User, 0, query.Size)
+	// for i := 0; i < query.Size; i++ {
+	// 	db_list = append(db_list, model.User{
+	// 		Name: fmt.Sprintf("user-%d", i+1),
+	// 	})
+	// }
+
+	db_list, total, err := us.userRepo.Search(ctx, query)
 
 	return dto.UserListResp{
 		List: db_list,
@@ -59,9 +57,9 @@ func (us *userService) GetUserList(query dto.UserListQuery) (dto.UserListResp, e
 			Page:  query.Page,
 			Size:  query.Size,
 			Sort:  query.Sort,
-			Total: 100,
+			Total: total,
 		},
-	}, nil
+	}, err
 }
 
 func (us *userService) CreateUser(ctx context.Context, params dto.UserCreate) (model.User, error) {
@@ -84,16 +82,17 @@ func (us *userService) CreateUser(ctx context.Context, params dto.UserCreate) (m
 	return *newUser, nil
 }
 
-func (us *userService) DeleteUser(info dto.UserDelete) (model.User, error) {
+func (us *userService) DeleteUser(ctx context.Context, info dto.UserDelete) (model.User, error) {
 	// 数据库模拟删除一条数据
 	// targetUser := db.DeleteUser(&user)
 
-	targetUser := model.User{
-		Name: uuid.New().String(),
-		Id:   info.Id,
-	}
+	// targetUser := model.User{
+	// 	Name: uuid.New().String(),
+	// }
 
-	return targetUser, nil
+	targetUser, err := us.userRepo.Delete(ctx, info.Id)
+
+	return targetUser, err
 }
 
 func (us *userService) UpdateUser(data dto.UserUpdate) (model.User, error) {
@@ -102,7 +101,6 @@ func (us *userService) UpdateUser(data dto.UserUpdate) (model.User, error) {
 
 	updatedUser := model.User{
 		Name: data.User.Name,
-		Id:   data.User.Id,
 	}
 
 	return updatedUser, nil

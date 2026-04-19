@@ -45,7 +45,7 @@ func (handler *UserHandler) GetUserList(ctx *gin.Context) {
 		return
 	}
 
-	resp, _ := handler.service.GetUserList(query)
+	resp, _ := handler.service.GetUserList(ctx, query)
 	httpx.Ok(ctx, resp)
 }
 
@@ -76,7 +76,7 @@ func (handler *UserHandler) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, _ := handler.service.DeleteUser(info)
+	resp, _ := handler.service.DeleteUser(ctx, info)
 	httpx.Ok(ctx, resp)
 }
 
