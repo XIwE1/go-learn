@@ -76,7 +76,7 @@ func (handler *UserHandler) DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, _ := handler.service.DeleteUser(ctx, info)
+	resp, _ := handler.service.DeleteUser(ctx.Request.Context(), info)
 	httpx.Ok(ctx, resp)
 }
 
@@ -87,6 +87,6 @@ func (handler *UserHandler) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	resp, _ := handler.service.UpdateUser(data)
+	resp, _ := handler.service.UpdateUser(ctx.Request.Context(), data)
 	httpx.Ok(ctx, resp)
 }

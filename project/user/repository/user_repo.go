@@ -13,6 +13,7 @@ type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
 	Delete(ctx context.Context, id uint) (model.User, error)
 	Search(ctx context.Context, meta dto.UserListQuery) ([]model.User, int64, error)
+	Update(ctx context.Context, params dto.UserUpdate) (model.User, error)
 }
 
 type userRepository struct {
@@ -60,4 +61,24 @@ func (userRepo *userRepository) Search(ctx context.Context, meta dto.UserListQue
 	users, err := g.Offset(offset).Limit(meta.Size).Find(ctx)
 
 	return users, total, err
+}
+
+func (userRepo *userRepository) Update(ctx context.Context, params dto.UserUpdate) (model.User, error) {
+	// 更新
+	rows, err := gorm.G[model.User](userRepo.db).Where("id = ?", params.Id).Updates(ctx, model.User{
+		Name:  params.Name,
+		Email: params.Email,
+	})
+	if err != nil || rows == 0 {
+		return model.User{}, err
+	}
+
+	// 获取最新数据
+	updated, err := gorm.G[model.User](userRepo.db).
+		Where("id = ?", params.Id).
+		First(ctx)
+	if err != nil {
+		return model.User{}, err
+	}
+	return updated, err
 }

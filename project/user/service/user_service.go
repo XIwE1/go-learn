@@ -17,7 +17,7 @@ type UserService interface {
 	GetUserList(ctx context.Context, query dto.UserListQuery) (dto.UserListResp, error)
 	CreateUser(ctx context.Context, params dto.UserCreate) (model.User, error)
 	DeleteUser(ctx context.Context, info dto.UserDelete) (model.User, error)
-	UpdateUser(data dto.UserUpdate) (model.User, error)
+	UpdateUser(ctx context.Context, data dto.UserUpdate) (model.User, error)
 }
 
 func NewUserService(userRepo repository.UserRepository) UserService {
@@ -72,7 +72,8 @@ func (us *userService) CreateUser(ctx context.Context, params dto.UserCreate) (m
 	// }
 
 	newUser := &model.User{
-		Name: params.Name,
+		Name:  params.Name,
+		Email: params.Email,
 	}
 
 	if err := us.userRepo.Create(ctx, newUser); err != nil {
@@ -95,13 +96,15 @@ func (us *userService) DeleteUser(ctx context.Context, info dto.UserDelete) (mod
 	return targetUser, err
 }
 
-func (us *userService) UpdateUser(data dto.UserUpdate) (model.User, error) {
+func (us *userService) UpdateUser(ctx context.Context, data dto.UserUpdate) (model.User, error) {
 	// 数据库模拟更新一条数据
 	// updatedUser := db.UpdateUser(&user)
 
-	updatedUser := model.User{
-		Name: data.User.Name,
-	}
+	// updatedUser := model.User{
+	// 	Name: data.User.Name,
+	// }
 
-	return updatedUser, nil
+	updatedUser, err := us.userRepo.Update(ctx, data)
+
+	return updatedUser, err
 }
