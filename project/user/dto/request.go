@@ -6,9 +6,11 @@ type UserInfoURI struct {
 }
 
 type UserListQuery struct {
-	Page int    `form:"page,default=1" binding:"min=1"`
-	Size int    `form:"size,default=5" binding:"min=1,max=100"`
-	Sort string `form:"sort"`
+	Name  string `form:"name" json:"name"`
+	Email string `form:"email" json:"email"`
+	Page  int    `form:"page,default=1" binding:"min=1"`
+	Size  int    `form:"size,default=5" binding:"min=1,max=100"`
+	Sort  string `form:"sort"`
 }
 
 type UserCreate struct {

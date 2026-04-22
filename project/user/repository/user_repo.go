@@ -12,7 +12,7 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
 	Delete(ctx context.Context, id uint) (model.User, error)
-	Search(ctx context.Context, meta dto.UserListQuery) ([]model.User, int64, error)
+	Search(ctx context.Context, query dto.UserListQuery) ([]model.User, int64, error)
 	Update(ctx context.Context, params dto.UserUpdate) (model.User, error)
 }
 
@@ -50,16 +50,32 @@ func (userRepo *userRepository) Delete(ctx context.Context, id uint) (model.User
 	return deleted, err
 }
 
-func (userRepo *userRepository) Search(ctx context.Context, meta dto.UserListQuery) ([]model.User, int64, error) {
-	offset := (meta.Page - 1) * meta.Size
-	g := gorm.G[model.User](userRepo.db)
-	total, err := g.Count(ctx, "*")
+func (userRepo *userRepository) Search(ctx context.Context, query dto.UserListQuery) ([]model.User, int64, error) {
+	// 获得偏移量
+	offset := (query.Page - 1) * query.Size
+	var total int64
+	var users []model.User
+	// 基础链
+	chain := userRepo.db.WithContext(ctx).Model(&model.User{})
+
+	// 动态筛选 模糊匹配
+	if query.Name != "" {
+		chain = chain.Where("name LIKE ?", "%"+query.Name+"%")
+	}
+	if query.Email != "" {
+		chain = chain.Where("email LIKE ?", "%"+query.Email+"%")
+		// 精确匹配 chain = chain.Where("email = ?", q.Email)
+	}
+
+	// 筛选后统计总数
+	err := chain.Count(&total).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
-	users, err := g.Offset(offset).Limit(meta.Size).Find(ctx)
-
+	if err := chain.Offset(offset).Limit(query.Size).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
 	return users, total, err
 }
 
