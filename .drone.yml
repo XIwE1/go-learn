@@ -1,5 +1,4 @@
 # 后端 Go：构建 Linux 二进制 → rsync 到本机目录 → systemctl restart
-# 首次部署需在服务器：创建 /opt/myproject、安装 deploy/myproject.service、配置 /etc/myproject.env
 kind: pipeline
 type: docker
 name: backend
@@ -17,7 +16,7 @@ trigger:
 
 steps:
   - name: build
-    image: golang:1.24-bookworm
+    image: golang:1.24
     environment:
       GOTOOLCHAIN: auto
     commands:
