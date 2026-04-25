@@ -1,9 +1,16 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
-	gorm.Model
+	ID        uint           `gorm:"primarykey"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 	// uri 结构体标签将 URI 路径参数直接绑定到结构体中
 	Name  string `uri:"name" json:"name" binding:"required"`
 	Email string `uri:"email" json:"email" binding:"-"`

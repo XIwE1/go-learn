@@ -54,10 +54,11 @@ func (us *userService) GetUserList(ctx context.Context, query dto.UserListQuery)
 	return dto.UserListResp{
 		List: db_list,
 		Meta: response.Meta{
-			Page:  query.Page,
-			Size:  query.Size,
-			Sort:  query.Sort,
-			Total: total,
+			Page:   query.Page,
+			Size:   query.Size,
+			Sort:   query.Sort,
+			SortBy: query.SortBy,
+			Total:  total,
 		},
 	}, err
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"myproject/user/dto"
 	"myproject/user/model"
 
@@ -72,7 +73,10 @@ func (userRepo *userRepository) Search(ctx context.Context, query dto.UserListQu
 	if err != nil {
 		return nil, 0, err
 	}
-
+	// 排序
+	if query.Sort != "" && query.SortBy != "" {
+		chain = chain.Order(fmt.Sprintf("%s %s", query.Sort, query.SortBy))
+	}
 	if err := chain.Offset(offset).Limit(query.Size).Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
