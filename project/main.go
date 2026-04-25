@@ -21,9 +21,17 @@ import (
 )
 
 func main() {
-	// 连接数据库
 	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
 	dsn := "developer_1:txyprtwy12AA!@tcp(115.190.227.247:3306)/gin_mysql?charset=utf8mb4&parseTime=True&loc=Local"
+
+	// 可配置：从环境变量中获取dsn
+	// dsn := os.Getenv("DATABASE_DSN")
+	// if dsn == "" {
+	// 	dsn = os.Getenv("MYSQL_DSN")
+	// }
+	// if dsn == "" {
+	// 	log.Fatal("请设置环境变量 DATABASE_DSN 或 MYSQL_DSN（MySQL DSN 字符串）")
+	// }
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("数据库连接失败: ", err)
@@ -63,9 +71,14 @@ func main() {
 	// 默认启动方式
 	// router.Run() // listens on 0.0.0.0:8080 by default
 
+	addr := os.Getenv("HTTP_ADDR")
+	if addr == "" {
+		addr = ":8080"
+	}
+
 	// 使用自定义服务器配置
 	server := &http.Server{
-		Addr:           ":8080",
+		Addr:           addr,
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
