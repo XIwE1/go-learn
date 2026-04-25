@@ -1,0 +1,58 @@
+# 后端 Go：构建 Linux 二进制 → rsync 到本机目录 → systemctl restart
+# 首次部署需在服务器：创建 /opt/myproject、安装 deploy/myproject.service、配置 /etc/myproject.env
+kind: pipeline
+type: docker
+name: backend
+
+clone:
+  retries: 2
+
+trigger:
+  branch:
+    - main
+  paths:
+    include:
+      - project/**
+      - .drone.yml
+
+steps:
+  - name: build
+    image: golang:1.24-bookworm
+    environment:
+      GOTOOLCHAIN: auto
+    commands:
+      - set -e
+      - mkdir -p bin
+      - cd project
+      - go version
+      - go mod download
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o ../bin/myproject .
+
+  - name: deploy
+    image: drillster/drone-rsync
+    network_mode: host
+    depends_on:
+      - build
+    settings:
+      hosts:
+        - localhost
+      user: root
+      key:
+        from_secret: deploy_ssh_secret
+      port: 22
+      source: bin/
+      target: /opt/myproject
+
+  # - name: restart
+  #   image: appleboy/drone-ssh
+  #   network_mode: host
+  #   depends_on:
+  #     - deploy
+  #   settings:
+  #     host: localhost
+  #     username: root
+  #     key:
+  #       from_secret: deploy_ssh_secret
+  #     port: 22
+  #     script:
+  #       - systemctl restart myproject
