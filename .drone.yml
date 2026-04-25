@@ -43,16 +43,16 @@ steps:
       source: bin/
       target: /opt/myproject
 
-  # - name: restart
-  #   image: appleboy/drone-ssh
-  #   network_mode: host
-  #   depends_on:
-  #     - deploy
-  #   settings:
-  #     host: localhost
-  #     username: root
-  #     key:
-  #       from_secret: deploy_ssh_secret
-  #     port: 22
-  #     script:
-  #       - systemctl restart myproject
+  - name: restart
+    image: appleboy/drone-ssh
+    network_mode: host
+    depends_on:
+      - deploy
+    settings:
+      host: localhost
+      username: root
+      key:
+        from_secret: deploy_ssh_secret
+      port: 22
+      script:
+        - systemctl restart myproject
