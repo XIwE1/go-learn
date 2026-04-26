@@ -3,7 +3,6 @@ package middleware
 import (
 	"myproject/common/apperr"
 	"myproject/common/httpx"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,10 +36,10 @@ func ValidateIdMiddleWare() gin.HandlerFunc {
 // 中间件 设置安全头
 func HeaderMiddleWare() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.Request.Host != expectedHost {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid host header"})
-			return
-		}
+		// if ctx.Request.Host != expectedHost {
+		// 	ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid host header"})
+		// 	return
+		// }
 		// 通过禁止页面在 <iframe> 中加载来防止点击劫持
 		ctx.Header("X-Frame-Options", "DENY")
 		// 控制浏览器允许加载哪些资源（脚本、样式、图片、字体等）以及从哪些来源
