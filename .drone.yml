@@ -14,14 +14,30 @@ trigger:
       - project/**
       - .drone.yml
 
+# 模块/编译缓存挂宿主机，多次构建复用
+volumes:
+  - name: go-mod-cache
+    host:
+      path: /home/drone/cache/go/pkg-mod
+  - name: go-build-cache
+    host:
+      path: /home/drone/cache/go/go-build
+
 steps:
   - name: build
     image: golang:1.24
+    volumes:
+      - name: go-mod-cache
+        path: /cache/gomod
+      - name: go-build-cache
+        path: /cache/gocache
     environment:
       GOTOOLCHAIN: auto
       # 国内构建 - 避免超时
       GOPROXY: https://goproxy.cn,direct
       GOSUMDB: sum.golang.google.cn
+      GOMODCACHE: /cache/gomod
+      GOCACHE: /cache/gocache
     commands:
       - set -e
       - mkdir -p bin
